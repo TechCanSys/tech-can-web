@@ -2,26 +2,33 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { ArrowUpRight, ArrowRight, ShieldCheck, Headphones, Network, Lightbulb, CheckCircle2, MapPin, ChevronLeft, ChevronRight, Info, Quote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { services, pageHead } from '@/data/services'
-import { projects, testimonials } from '@/data/portfolio'
+import { pageHead } from '@/data/services'
+import { testimonials } from '@/data/portfolio'
+import { useQuery } from '@tanstack/react-query'
+import { servicesQuery, projectsQuery, contentQuery, imageFor, iconMap } from '@/lib/content'
+import { useSiteContent } from '@/hooks/use-site'
 import { usePrefs } from '@/lib/prefs'
 import { ContactBand } from '@/components/site/site-shell'
 import datacenter from '@/assets/techcan-datacenter.jpg'
 
-export const Route = createFileRoute('/')({ head: () => pageHead('Soluções tecnológicas em Moçambique', 'Consultoria, suporte, desenvolvimento digital, infraestrutura e segurança. A Tech-Can Systems conecta a sua empresa ao futuro da tecnologia.'), component: Index })
+export const Route = createFileRoute('/')({ head: () => pageHead('Soluções tecnológicas em Moçambique', 'Consultoria, suporte, desenvolvimento digital, infraestrutura e segurança. A Tech-Can Systems conecta a sua empresa ao futuro da tecnologia.'), loader: async ({ context }) => { await Promise.all([context.queryClient.ensureQueryData(servicesQuery), context.queryClient.ensureQueryData(projectsQuery), context.queryClient.ensureQueryData(contentQuery)]) }, component: Index })
 
 function Index() {
   const { t } = usePrefs()
+  const services = useQuery(servicesQuery).data ?? []
+  const projects = useQuery(projectsQuery).data ?? []
+  const { texts } = useSiteContent()
+  const tx = (k: string) => t(texts[k]!.pt, texts[k]!.en)
   const track = useRef<HTMLDivElement>(null)
   const scrollCarousel = (dir: number) => { const el = track.current; if (el) el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: 'smooth' }) }
   return <>
     <section className="hero">
       <img className="hero-photo" src={datacenter} alt={t('Infraestrutura tecnológica com servidores e equipamentos de rede', 'Technology infrastructure with servers and network equipment')} width={1920} height={1024} fetchPriority="high" />
       <div className="wrap hero-content reveal">
-        <div className="eyebrow"><span className="status-dot" />{t('Tecnologia com propósito', 'Technology with purpose')}</div>
+        <div className="eyebrow"><span className="status-dot" />{tx('hero_eyebrow')}</div>
         <h1>Tech-Can Systems<span>.</span></h1>
-        <p className="hero-tagline">{t('Inovando o futuro', 'Innovating the future')}<br />{t('da tecnologia.', 'of technology.')}</p>
-        <p className="hero-desc">{t('Transformamos desafios em soluções. Da infraestrutura à inovação digital, conectamos o seu negócio a novas possibilidades.', 'We turn challenges into solutions. From infrastructure to digital innovation, we connect your business to new possibilities.')}</p>
+        <p className="hero-tagline">{tx('hero_tagline')}</p>
+        <p className="hero-desc">{tx('hero_desc')}</p>
         <div className="hero-actions">
           <Button variant="brand" asChild><Link to="/servicos">{t('Explore as nossas soluções', 'Explore our solutions')} <ArrowUpRight /></Link></Button>
           <Button variant="line" asChild><Link to="/contactos">{t('Fale connosco', 'Get in touch')} <ArrowRight /></Link></Button>
