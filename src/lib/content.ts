@@ -15,6 +15,34 @@ export type ServiceRow = Tables<'services'>
 export type ProjectRow = Tables<'projects'>
 export type ContentRow = Tables<'site_content'>
 
+export interface ServiceView {
+  id: string
+  slug: string
+  title: string
+  titleEn: string
+  short: string
+  shortEn: string
+  category: string
+  icon: LucideIcon
+  cover: string
+  items: string[]
+  itemsEn: string[]
+  position: number
+}
+
+export interface ProjectView {
+  id: string
+  slug: string
+  tag: string
+  tagEn: string
+  title: string
+  titleEn: string
+  desc: string
+  descEn: string
+  image: string
+  position: number
+}
+
 export const iconMap: Record<string, LucideIcon> = { Wrench, Code2, Network, ShieldCheck, Workflow, GraduationCap, Lightbulb, Server, Smartphone, Cloud }
 export const categories = ['Operações', 'Digital', 'Segurança', 'Formação'] as const
 
@@ -25,24 +53,57 @@ const fallbackImages: Record<string, string> = {
 export const imageFor = (row: { slug: string; image_url: string | null }) => row.image_url || fallbackImages[row.slug] || coverBusiness
 
 const now = new Date(0).toISOString()
-const fallbackServices: ServiceRow[] = staticServices.map((s, i) => ({ id: s.id, slug: s.id, title: s.title, title_en: s.titleEn, short: s.short, short_en: s.shortEn, category: s.category, icon: Object.keys(iconMap).find(k => iconMap[k] === s.icon) ?? 'Wrench', image_url: null, items: s.items, items_en: s.itemsEn, position: i + 1, published: true, created_at: now, updated_at: now }))
-const fallbackProjects: ProjectRow[] = staticProjects.map((p, i) => ({ id: p.id, slug: p.id, tag: p.tag, tag_en: p.tagEn, title: p.title, title_en: p.titleEn, description: p.desc, description_en: p.descEn, image_url: null, position: i + 1, published: true, created_at: now, updated_at: now }))
+const fallbackServiceRows: ServiceRow[] = staticServices.map((s, i) => ({ id: s.id, slug: s.id, title: s.title, title_en: s.titleEn, short: s.short, short_en: s.shortEn, category: s.category, icon: Object.keys(iconMap).find(k => iconMap[k] === s.icon) ?? 'Wrench', image_url: null, items: s.items, items_en: s.itemsEn, position: i + 1, published: true, created_at: now, updated_at: now }))
+const fallbackProjectRows: ProjectRow[] = staticProjects.map((p, i) => ({ id: p.id, slug: p.id, tag: p.tag, tag_en: p.tagEn, title: p.title, title_en: p.titleEn, description: p.desc, description_en: p.descEn, image_url: null, position: i + 1, published: true, created_at: now, updated_at: now }))
+
+function serviceRowToView(row: ServiceRow): ServiceView {
+  const icon = iconMap[row.icon] ?? Wrench
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    titleEn: row.title_en,
+    short: row.short,
+    shortEn: row.short_en,
+    category: row.category,
+    icon,
+    cover: imageFor(row),
+    items: row.items,
+    itemsEn: row.items_en,
+    position: row.position,
+  }
+}
+
+function projectRowToView(row: ProjectRow): ProjectView {
+  return {
+    id: row.id,
+    slug: row.slug,
+    tag: row.tag,
+    tagEn: row.tag_en,
+    title: row.title,
+    titleEn: row.title_en,
+    desc: row.description,
+    descEn: row.description_en,
+    image: imageFor(row),
+    position: row.position,
+  }
+}
 
 export const servicesQuery = queryOptions({
   queryKey: ['public', 'services'],
-  queryFn: async (): Promise<ServiceRow[]> => {
+  queryFn: async (): Promise<ServiceView[]> => {
     const { data, error } = await supabase.from('services').select('*').eq('published', true).order('position')
-    if (error || !data) return fallbackServices
-    return data
+    const rows = (error || !data) ? fallbackServiceRows : data
+    return rows.map(serviceRowToView)
   },
 })
 
 export const projectsQuery = queryOptions({
   queryKey: ['public', 'projects'],
-  queryFn: async (): Promise<ProjectRow[]> => {
+  queryFn: async (): Promise<ProjectView[]> => {
     const { data, error } = await supabase.from('projects').select('*').eq('published', true).order('position')
-    if (error || !data) return fallbackProjects
-    return data
+    const rows = (error || !data) ? fallbackProjectRows : data
+    return rows.map(projectRowToView)
   },
 })
 

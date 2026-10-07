@@ -8,20 +8,36 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactosRouteImport } from './routes/contactos'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SobreRouteImport } from './routes/sobre'
+
+const AdminLazyRouteImport = createFileRoute('/admin')()
+const AdminIndexLazyRouteImport = createFileRoute('/admin/')()
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLazyRoute = AdminLazyRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
 const ContactosRoute = ContactosRouteImport.update({
   id: '/contactos',
   path: '/contactos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicosRoute = ServicosRouteImport.update({
@@ -34,39 +50,69 @@ const SobreRoute = SobreRouteImport.update({
   path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexLazyRoute = AdminIndexLazyRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminLazyRoute,
+} as any).lazy(() => import('./routes/admin/index.lazy').then((d) => d.Route))
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contactos': typeof ContactosRoute
+  '/login': typeof LoginRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/admin': typeof AdminLazyRouteWithChildren
+  '/admin/': typeof AdminIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contactos': typeof ContactosRoute
+  '/login': typeof LoginRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/admin': typeof AdminIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/contactos': typeof ContactosRoute
+  '/login': typeof LoginRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/admin': typeof AdminLazyRouteWithChildren
+  '/admin/': typeof AdminIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contactos' | '/servicos' | '/sobre'
+  fullPaths:
+    | '/'
+    | '/contactos'
+    | '/login'
+    | '/servicos'
+    | '/sobre'
+    | '/admin'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contactos' | '/servicos' | '/sobre'
-  id: '__root__' | '/' | '/contactos' | '/servicos' | '/sobre'
+  to: '/' | '/contactos' | '/login' | '/servicos' | '/sobre' | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/contactos'
+    | '/login'
+    | '/servicos'
+    | '/sobre'
+    | '/admin'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContactosRoute: typeof ContactosRoute
+  LoginRoute: typeof LoginRoute
   ServicosRoute: typeof ServicosRoute
   SobreRoute: typeof SobreRoute
+  AdminLazyRoute: typeof AdminLazyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -78,11 +124,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contactos': {
       id: '/contactos'
       path: '/contactos'
       fullPath: '/contactos'
       preLoaderRoute: typeof ContactosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/servicos': {
@@ -99,14 +159,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexLazyRouteImport
+      parentRoute: typeof AdminLazyRoute
+    }
   }
 }
+
+interface AdminLazyRouteChildren {
+  AdminIndexLazyRoute: typeof AdminIndexLazyRoute
+}
+
+const AdminLazyRouteChildren: AdminLazyRouteChildren = {
+  AdminIndexLazyRoute: AdminIndexLazyRoute,
+}
+
+const AdminLazyRouteWithChildren = AdminLazyRoute._addFileChildren(
+  AdminLazyRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContactosRoute: ContactosRoute,
+  LoginRoute: LoginRoute,
   ServicosRoute: ServicosRoute,
   SobreRoute: SobreRoute,
+  AdminLazyRoute: AdminLazyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
