@@ -1,4 +1,4 @@
-# Remix of Tech-Can Systems
+# Tech-Can Systems Website
 
 Cria uma página web para empresa de Tecnologia.
 
