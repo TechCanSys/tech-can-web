@@ -1,5 +1,11 @@
 # Tech-Can Systems Website
 
+## Pedidos de contacto pelo Telegram
+
+O formulário de contacto envia os pedidos para um chat do Telegram através de um bot. Configure `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` como variáveis de ambiente secretas no servidor antes de ativar esta função. Não exponha o token em variáveis `VITE_*` nem no código do cliente.
+
+Para obter o chat ID, crie um bot com o BotFather, inicie uma conversa com o bot a partir da conta que receberá os pedidos e obtenha o `chat.id` dessa conversa através da Bot API. O @username da conta, por si só, não substitui o chat ID. O formulário também prepara uma mensagem para `techcansystems@gmail.com`; o utilizador ainda precisa rever e enviar essa mensagem na sua aplicação de email.
+
 Cria uma página web para empresa de Tecnologia.
 
 Melhore os dados. Caso necessário pois você é o melhor desenvolvedor web, considerando as mais modernas tecnologias para páginas web. 
